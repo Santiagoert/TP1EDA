@@ -2,42 +2,35 @@ package tp1eda;
 
 public class TP1Eda {
     public static void main(String[] args) {
-        // ========== Ejemplo de uso de Agenda ==========
-        Agenda agendaPersonal = new Agenda();
-        Agenda agendaTrabajo = new Agenda();
+        // ========== Ejemplo de uso de la Agenda ==========
+        Agenda agenda = new Agenda();
+          // qqqq
+        // Agregar contactos
+        agenda.agregar(new Contacto("Juan", "123456", "juan@mail.com"))
+              .agregar(new Contacto("María", "654321", "maria@mail.com"))
+              .agregar(new Contacto("Pedro", "987654", "pedro@mail.com"));
 
-        // Agregar contactos a agenda personal
-        agendaPersonal.agregar(new Contacto("Juan", "123456", "juan@personal.com"))
-                      .agregar(new Contacto("María", "654321", "maria@personal.com"));
+        // Listar contactos
+        System.out.println("=== Lista de contactos ===");
+        agenda.listar();
 
-        // Agregar contactos a agenda trabajo
-        agendaTrabajo.agregar(new Contacto("María", "987654", "maria@trabajo.com"))
-                     .agregar(new Contacto("Pedro", "456123", "pedro@trabajo.com"));
+        // Buscar contacto
+        System.out.println("\n=== Buscar contacto ===");
+        Contacto buscado = agenda.buscar("María");
+        System.out.println(buscado != null ? buscado : "No encontrado");
 
-        System.out.println("=== Agenda Personal ===");
-        agendaPersonal.listar();
-        
-        System.out.println("\n=== Agenda Trabajo ===");
-        agendaTrabajo.listar();
+        // Borrar contacto
+        System.out.println("\n=== Borrar contacto (tel: 654321) ===");
+        agenda.borrar("654321");
+        agenda.listar();
 
-        // Combinar agendas
-        combinarAgendas(agendaPersonal, agendaTrabajo);
-        
-        System.out.println("\n=== Agenda Combinada ===");
-        agendaPersonal.listar();
-    }
-
-    public static void combinarAgendas(Agenda destino, Agenda fuente) {
-        int total = fuente.cantidad();
-        for(int i = 0; i < total; i++) {
-            Contacto actual = fuente.enPosicion(i);
-            if(destino.buscar(actual.getNombre()) == null) {
-                destino.agregar(actual);
-            }
-        }
+        // Contacto en posición
+        System.out.println("\n=== Contacto en posición 1 ===");
+        System.out.println(agenda.enPosicion(1));
     }
 }
 
+// ========== Clase Contacto ==========
 class Contacto {
     private String nombre;
     private String telefono;
@@ -49,6 +42,7 @@ class Contacto {
         this.email = email;
     }
 
+    // Getters
     public String getNombre() { return nombre; }
     public String getTelefono() { return telefono; }
     public String getEmail() { return email; }
@@ -56,12 +50,13 @@ class Contacto {
     @Override
     public String toString() {
         return String.format(
-            "%-10s | Tel: %-8s | Email: %s", 
+            "Nombre: %-10s | Tel: %-8s | Email: %s",
             nombre, telefono, email
         );
     }
 }
 
+// ========== Clase Agenda ==========
 class Agenda {
     private ListaEnlazada contactos;
 
@@ -69,29 +64,32 @@ class Agenda {
         this.contactos = new ListaEnlazada();
     }
 
+    // Agrega un contacto
     public Agenda agregar(Contacto c) {
         contactos.insertarAlFinal(c);
         return this;
     }
 
+    // Busca por nombre
     public Contacto buscar(String nombre) {
         ListaEnlazada.Nodo temp = contactos.getCabeza();
-        while(temp != null) {
+        while (temp != null) {
             Contacto c = (Contacto) temp.dato;
-            if(c.getNombre().equalsIgnoreCase(nombre)) return c;
+            if (c.getNombre().equals(nombre)) return c;
             temp = temp.siguiente;
         }
         return null;
     }
 
+    // Borra por teléfono
     public void borrar(String telefono) {
         ListaEnlazada.Nodo actual = contactos.getCabeza();
         ListaEnlazada.Nodo anterior = null;
         
-        while(actual != null) {
+        while (actual != null) {
             Contacto c = (Contacto) actual.dato;
-            if(c.getTelefono().equals(telefono)) {
-                if(anterior == null) {
+            if (c.getTelefono().equals(telefono)) {
+                if (anterior == null) {  // Es el primer nodo
                     contactos.setCabeza(actual.siguiente);
                 } else {
                     anterior.siguiente = actual.siguiente;
@@ -104,32 +102,38 @@ class Agenda {
         }
     }
 
+    // Lista todos los contactos
     public void listar() {
         ListaEnlazada.Nodo temp = contactos.getCabeza();
-        while(temp != null) {
+        while (temp != null) {
             System.out.println(temp.dato);
             temp = temp.siguiente;
         }
     }
 
+    // Cantidad de contactos
     public int cantidad() {
         return contactos.getTamaño();
     }
 
-    public Contacto enPosicion(int pos) {
-        if(pos < 0 || pos >= contactos.getTamaño()) {
-            throw new IndexOutOfBoundsException("Posición inválida: " + pos);
+    // Contacto en posición específica
+    public Contacto enPosicion(int posicion) {
+        if (posicion < 0 || posicion >= contactos.getTamaño()) {
+            throw new IndexOutOfBoundsException("Posición inválida");
         }
         
         ListaEnlazada.Nodo temp = contactos.getCabeza();
-        for(int i = 0; i < pos; i++) temp = temp.siguiente;
+        for (int i = 0; i < posicion; i++) {
+            temp = temp.siguiente;
+        }
         return (Contacto) temp.dato;
     }
 }
 
+// ========== ListaEnlazada Modificada (para trabajar con objetos) ==========
 class ListaEnlazada {
-    class Nodo {
-        Object dato;
+    public class Nodo {
+        Object dato;  // Ahora almacena objetos
         Nodo siguiente;
 
         Nodo(Object dato) {
@@ -141,29 +145,43 @@ class ListaEnlazada {
     private Nodo cabeza;
     private int tamaño;
 
+    // Getters y Setters necesarios
     public Nodo getCabeza() { return cabeza; }
     public void setCabeza(Nodo cabeza) { this.cabeza = cabeza; }
     public int getTamaño() { return tamaño; }
-    public void setTamaño(int t) { tamaño = t; }
+    public void setTamaño(int tamaño) { this.tamaño = tamaño; }
 
-    public ListaEnlazada insertarAlFinal(Object dato) {
-        Nodo nuevo = new Nodo(dato);
-        if(cabeza == null) {
+    public boolean esVacia() {
+        return cabeza == null;
+    }
+
+    public static ListaEnlazada crearLista() {
+        return new ListaEnlazada();
+    }
+
+    public ListaEnlazada insertarAlInicio(Object x) {
+        Nodo nuevo = new Nodo(x);
+        nuevo.siguiente = cabeza;
+        cabeza = nuevo;
+        tamaño++;
+        return this;
+    }
+
+    public ListaEnlazada insertarAlFinal(Object x) {
+        Nodo nuevo = new Nodo(x);
+        if (esVacia()) {
             cabeza = nuevo;
         } else {
             Nodo temp = cabeza;
-            while(temp.siguiente != null) temp = temp.siguiente;
+            while (temp.siguiente != null) {
+                temp = temp.siguiente;
+            }
             temp.siguiente = nuevo;
         }
         tamaño++;
         return this;
     }
 
-    public ListaEnlazada insertarAlInicio(Object dato) {
-        Nodo nuevo = new Nodo(dato);
-        nuevo.siguiente = cabeza;
-        cabeza = nuevo;
-        tamaño++;
-        return this;
-      }
+    // Resto de métodos se mantienen similares, trabajando con Object
+    // ...
 }
