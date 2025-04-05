@@ -2,137 +2,46 @@ package tp1eda;
 
 public class TP1Eda {
     public static void main(String[] args) {
-        // ========== Ejemplo de uso de Agenda ==========
-        Agenda agendaPersonal = new Agenda();
-        Agenda agendaTrabajo = new Agenda();
+        ListaEnlazada lista = ListaEnlazada.crearLista();;
+       
+        lista.insertarAlFinal(10)
+             .insertarAlFinal(20)
+             .insertarAlFinal(30)
+             .insertarAlInicio(5);
 
-        // Agregar contactos a agenda personal
-        agendaPersonal.agregar(new Contacto("Juan", "123456", "juan@personal.com"))
-                      .agregar(new Contacto("María", "654321", "maria@personal.com"));
+        System.out.println("Lista actual:");
+        lista.mostrar();
 
-        // Agregar contactos a agenda trabajo
-        agendaTrabajo.agregar(new Contacto("María", "987654", "maria@trabajo.com"))
-                     .agregar(new Contacto("Pedro", "456123", "pedro@trabajo.com"));
+        System.out.println("Primer elemento: " + lista.primerElemento());
+        System.out.println("Cantidad de elementos: " + lista.cantidad());
 
-        System.out.println("=== Agenda Personal ===");
-        agendaPersonal.listar();
-        
-        System.out.println("\n=== Agenda Trabajo ===");
-        agendaTrabajo.listar();
+        lista.borrarPrimero();
+        System.out.println("Después de borrar el primer elemento:");
+        lista.mostrar();
 
-        // Combinar agendas
-        combinarAgendas(agendaPersonal, agendaTrabajo);
-        
-        System.out.println("\n=== Agenda Combinada ===");
-        agendaPersonal.listar();
-    }
+        lista.borrarUltimo();
+        System.out.println("Después de borrar el último elemento:");
+        lista.mostrar();
 
-    public static void combinarAgendas(Agenda destino, Agenda fuente) {
-        int total = fuente.cantidad();
-        for(int i = 0; i < total; i++) {
-            Contacto actual = fuente.enPosicion(i);
-            if(destino.buscar(actual.getNombre()) == null) {
-                destino.agregar(actual);
-            }
-        }
-    }
-}
+        System.out.println("¿El 20 pertenece a la lista? " + lista.pertenece(20));
+        System.out.println("Valor en posición 1: " + lista.valorEnPosicion(1));
 
-class Contacto {
-    private String nombre;
-    private String telefono;
-    private String email;
+        lista.modificarValorEnPosicion(25, 1);
+        System.out.println("Lista después de modificar la posición 1 con 25:");
+        lista.mostrar();
 
-    public Contacto(String nombre, String telefono, String email) {
-        this.nombre = nombre;
-        this.telefono = telefono;
-        this.email = email;
-    }
-
-    public String getNombre() { return nombre; }
-    public String getTelefono() { return telefono; }
-    public String getEmail() { return email; }
-
-    @Override
-    public String toString() {
-        return String.format(
-            "%-10s | Tel: %-8s | Email: %s", 
-            nombre, telefono, email
-        );
-    }
-}
-
-class Agenda {
-    private ListaEnlazada contactos;
-
-    public Agenda() {
-        this.contactos = new ListaEnlazada();
-    }
-
-    public Agenda agregar(Contacto c) {
-        contactos.insertarAlFinal(c);
-        return this;
-    }
-
-    public Contacto buscar(String nombre) {
-        ListaEnlazada.Nodo temp = contactos.getCabeza();
-        while(temp != null) {
-            Contacto c = (Contacto) temp.dato;
-            if(c.getNombre().equalsIgnoreCase(nombre)) return c;
-            temp = temp.siguiente;
-        }
-        return null;
-    }
-
-    public void borrar(String telefono) {
-        ListaEnlazada.Nodo actual = contactos.getCabeza();
-        ListaEnlazada.Nodo anterior = null;
-        
-        while(actual != null) {
-            Contacto c = (Contacto) actual.dato;
-            if(c.getTelefono().equals(telefono)) {
-                if(anterior == null) {
-                    contactos.setCabeza(actual.siguiente);
-                } else {
-                    anterior.siguiente = actual.siguiente;
-                }
-                contactos.setTamaño(contactos.getTamaño() - 1);
-                return;
-            }
-            anterior = actual;
-            actual = actual.siguiente;
-        }
-    }
-
-    public void listar() {
-        ListaEnlazada.Nodo temp = contactos.getCabeza();
-        while(temp != null) {
-            System.out.println(temp.dato);
-            temp = temp.siguiente;
-        }
-    }
-
-    public int cantidad() {
-        return contactos.getTamaño();
-    }
-
-    public Contacto enPosicion(int pos) {
-        if(pos < 0 || pos >= contactos.getTamaño()) {
-            throw new IndexOutOfBoundsException("Posición inválida: " + pos);
-        }
-        
-        ListaEnlazada.Nodo temp = contactos.getCabeza();
-        for(int i = 0; i < pos; i++) temp = temp.siguiente;
-        return (Contacto) temp.dato;
+        lista.insertarEnPosicion(15, 1);
+        System.out.println("Lista después de insertar 15 en la posición 1:");
+        lista.mostrar();
     }
 }
 
 class ListaEnlazada {
-    class Nodo {
-        Object dato;
+    private class Nodo {
+        int dato;
         Nodo siguiente;
 
-        Nodo(Object dato) {
+        Nodo(int dato) {
             this.dato = dato;
             this.siguiente = null;
         }
@@ -141,29 +50,135 @@ class ListaEnlazada {
     private Nodo cabeza;
     private int tamaño;
 
-    public Nodo getCabeza() { return cabeza; }
-    public void setCabeza(Nodo cabeza) { this.cabeza = cabeza; }
-    public int getTamaño() { return tamaño; }
-    public void setTamaño(int t) { tamaño = t; }
+    
+    public boolean esVacia() {
+        return cabeza == null;
+    }
+    public static ListaEnlazada crearLista() {
+        return new ListaEnlazada();
+    }
 
-    public ListaEnlazada insertarAlFinal(Object dato) {
-        Nodo nuevo = new Nodo(dato);
-        if(cabeza == null) {
+    public ListaEnlazada insertarAlInicio(int x) {
+        Nodo nuevo = new Nodo(x);
+        nuevo.siguiente = cabeza;
+        cabeza = nuevo;
+        tamaño++;
+        return this;
+    }
+
+    public ListaEnlazada insertarAlFinal(int x) {
+        Nodo nuevo = new Nodo(x);
+        if (esVacia()) {
             cabeza = nuevo;
         } else {
             Nodo temp = cabeza;
-            while(temp.siguiente != null) temp = temp.siguiente;
+            while (temp.siguiente != null) {
+                temp = temp.siguiente;
+            }
             temp.siguiente = nuevo;
         }
         tamaño++;
         return this;
     }
 
-    public ListaEnlazada insertarAlInicio(Object dato) {
-        Nodo nuevo = new Nodo(dato);
-        nuevo.siguiente = cabeza;
-        cabeza = nuevo;
+    public void mostrar() {
+        Nodo temp = cabeza;
+        while (temp != null) {
+            System.out.print(temp.dato + " -> ");
+            temp = temp.siguiente;
+        }
+        System.out.println("null");
+    }
+
+    public int cantidad() {
+        return tamaño;
+    }
+
+    public int primerElemento() {
+        if (esVacia()) throw new RuntimeException("Lista vacía");
+        return cabeza.dato;
+    }
+
+    public ListaEnlazada borrarPrimero() {
+        if (!esVacia()) {
+            cabeza = cabeza.siguiente;
+            tamaño--;
+        }
+        return this;
+    }
+
+    public ListaEnlazada borrarUltimo() {
+        if (esVacia()) return this;
+        if (cabeza.siguiente == null) {
+            cabeza = null;
+        } else {
+            Nodo temp = cabeza;
+            while (temp.siguiente.siguiente != null) {
+                temp = temp.siguiente;
+            }
+            temp.siguiente = null;
+        }
+        tamaño--;
+        return this;
+    }
+
+    public boolean pertenece(int buscado) {
+        Nodo temp = cabeza;
+        while (temp != null) {
+            if (temp.dato == buscado) return true;
+            temp = temp.siguiente;
+        }
+        return false;
+    }
+
+    public ListaEnlazada borrarConValor(int buscado) {
+        if (esVacia()) return this;
+        while (cabeza != null && cabeza.dato == buscado) {
+            cabeza = cabeza.siguiente;
+            tamaño--;
+        }
+        Nodo temp = cabeza;
+        while (temp != null && temp.siguiente != null) {
+            if (temp.siguiente.dato == buscado) {
+                temp.siguiente = temp.siguiente.siguiente;
+                tamaño--;
+            } else {
+                temp = temp.siguiente;
+            }
+        }
+        return this;
+    }
+
+    public int valorEnPosicion(int posicion) {
+        if (posicion < 0 || posicion >= tamaño) throw new IndexOutOfBoundsException("Índice fuera de rango");
+        Nodo temp = cabeza;
+        for (int i = 0; i < posicion; i++) {
+            temp = temp.siguiente;
+        }
+        return temp.dato;
+    }
+
+    public ListaEnlazada modificarValorEnPosicion(int valor, int posicion) {
+        if (posicion < 0 || posicion >= tamaño) throw new IndexOutOfBoundsException("Índice fuera de rango");
+        Nodo temp = cabeza;
+        for (int i = 0; i < posicion; i++) {
+            temp = temp.siguiente;
+        }
+        temp.dato = valor;
+        return this;
+    }
+
+    public ListaEnlazada insertarEnPosicion(int valor, int posicion) {
+        if (posicion < 0 || posicion > tamaño) throw new IndexOutOfBoundsException("Índice fuera de rango");
+        if (posicion == 0) return insertarAlInicio(valor);
+        Nodo nuevo = new Nodo(valor);
+        Nodo temp = cabeza;
+        for (int i = 0; i < posicion - 1; i++) {
+            temp = temp.siguiente;
+        }
+        nuevo.siguiente = temp.siguiente;
+        temp.siguiente = nuevo;
         tamaño++;
         return this;
-      }
+    }
 }
